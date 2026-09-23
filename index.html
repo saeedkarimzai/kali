@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kali Web OS</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#070b0a;color:#eee}
+body{background:radial-gradient(circle at 50% 35%,#17211f,#080b0b 55%,#030303)}
+#top{height:42px;background:#0b0b0bee;border-bottom:1px solid #333;display:flex;align-items:center;padding:0 14px;position:absolute;inset:0 0 auto;z-index:1000}
+.logo{color:#00ff9d;font-weight:bold;letter-spacing:1px}.center{position:absolute;left:50%;transform:translateX(-50%);color:#aaa;font-size:13px}.clock{margin-left:auto;color:#aaa;font-size:13px}
+#icons{position:absolute;top:65px;left:18px;display:flex;flex-direction:column;gap:14px}.icon{width:80px;text-align:center;cursor:pointer;color:#ddd}.icon:hover{color:#00ff9d}.ibox{width:52px;height:52px;margin:auto;border:1px solid #444;border-radius:8px;background:#151515;display:flex;align-items:center;justify-content:center;font-size:25px}.icon span{font-size:12px;display:block;margin-top:5px}
+.win{position:absolute;top:90px;left:180px;width:720px;height:470px;background:#101010;border:1px solid #444;border-radius:7px;box-shadow:0 15px 50px #000b;overflow:hidden;display:none;z-index:10}.win.active{display:block}
+.head{height:36px;background:#181818;border-bottom:1px solid #333;display:flex;align-items:center;padding:0 10px;cursor:move;user-select:none}.title{flex:1;color:#ccc;font-size:13px}.buttons{display:flex;gap:6px}.buttons button{width:13px;height:13px;border:0;border-radius:50%;cursor:pointer}.red{background:#ff4d4d}.yellow{background:#e8c34a}.green{background:#46d369}
+#term{height:calc(100% - 36px);background:#050505;padding:12px;font:14px "Courier New",monospace;overflow:auto;cursor:text}.out{white-space:pre-wrap;line-height:1.45}.line{display:flex}.prompt{color:#00ff9d;white-space:nowrap}.cmd{flex:1;background:transparent;border:0;outline:0;color:#fff;font:inherit;margin-left:7px}
+.files{padding:15px;height:calc(100% - 36px);overflow:auto}.toolbar{background:#191919;border:1px solid #333;padding:9px;margin-bottom:12px;color:#aaa}.filegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}.file{padding:15px 8px;border:1px solid #333;border-radius:6px;text-align:center}.file:hover{border-color:#00ff9d}.fi{font-size:32px;margin-bottom:7px}
+.settings,.about{padding:20px;line-height:1.6}.settings button{background:#151515;color:#fff;border:1px solid #444;padding:8px 12px;border-radius:5px;cursor:pointer}.settings button:hover{border-color:#00ff9d}h2{color:#00ff9d}
+#dock{position:absolute;bottom:0;left:0;right:0;height:58px;background:#0a0aeF;border-top:1px solid #333;display:flex;align-items:center;justify-content:center;gap:10px;z-index:1000}#dock button{width:43px;height:43px;background:#181818;border:1px solid #333;border-radius:8px;color:#fff;font-size:20px;cursor:pointer}#dock button:hover{border-color:#00ff9d;color:#00ff9d}
+#menu{position:absolute;bottom:66px;left:10px;width:310px;background:#0c0c0cf7;border:1px solid #444;border-radius:8px;padding:14px;display:none;z-index:2000;box-shadow:0 15px 50px #000}.mi{padding:11px;border-radius:5px;cursor:pointer}.mi:hover{background:#202020;color:#00ff9d}
+@media(max-width:800px){.win{left:5%;top:60px;width:90%;height:75%}.center{display:none}}
+</style>
+</head>
+<body>
+<div id="top"><div class="logo">KALI WEB OS</div><div class="center">Cybersecurity Learning Environment</div><div class="clock" id="clock"></div></div>
+<div id="icons">
+<div class="icon" onclick="openWin('terminal')"><div class="ibox">⌨</div><span>Terminal</span></div>
+<div class="icon" onclick="openWin('files')"><div class="ibox">📁</div><span>Files</span></div>
+<div class="icon" onclick="openWin('settings')"><div class="ibox">⚙</div><span>Settings</span></div>
+<div class="icon" onclick="openWin('about')"><div class="ibox">ⓘ</div><span>About</span></div>
+</div>
+
+<div class="win active" id="terminal">
+<div class="head"><div class="title">kali@web: ~</div><div class="buttons"><button class="yellow" onclick="closeWin('terminal')"></button><button class="green" onclick="maxWin('terminal')"></button><button class="red" onclick="closeWin('terminal')"></button></div></div>
+<div id="term" onclick="focusTerm()"><div class="out" id="out"></div><div class="line"><span class="prompt">kali@web:~$</span><input class="cmd" id="input" autocomplete="off" spellcheck="false"></div></div>
+</div>
+
+<div class="win" id="files">
+<div class="head"><div class="title">File Manager</div><div class="buttons"><button class="yellow" onclick="closeWin('files')"></button><button class="green" onclick="maxWin('files')"></button><button class="red" onclick="closeWin('files')"></button></div></div>
+<div class="files"><div class="toolbar">Virtual filesystem: /</div><div class="filegrid" id="filegrid"></div></div>
+</div>
+
+<div class="win" id="settings">
+<div class="head"><div class="title">Settings</div><div class="buttons"><button class="yellow" onclick="closeWin('settings')"></button><button class="green" onclick="maxWin('settings')"></button><button class="red" onclick="closeWin('settings')"></button></div></div>
+<div class="settings"><h2>System Settings</h2><p><button onclick="fullscreen()">Enter Fullscreen</button></p><p><button onclick="resetSystem()">Reset Virtual System</button></p><p><button onclick="clearOutput()">Clear Terminal</button></p></div>
+</div>
+
+<div class="win" id="about">
+<div class="head"><div class="title">About Kali Web OS</div><div class="buttons"><button class="yellow" onclick="closeWin('about')"></button><button class="green" onclick="maxWin('about')"></button><button class="red" onclick="closeWin('about')"></button></div></div>
+<div class="about"><h2>Kali Web OS</h2><p>A browser-based cybersecurity learning environment for Chromebook.</p><p>The terminal and filesystem are virtual and saved locally in your browser.</p><p>Future phases can add CTF labs, cryptography tools, networking simulations and more.</p><p>Shortcut: Ctrl + Alt + T</p></div>
+</div>
+
+<div id="menu"><h2 style="margin:0 0 10px">KALI WEB</h2><div class="mi" onclick="openWin('terminal');menu()">⌨ Terminal</div><div class="mi" onclick="openWin('files');menu()">📁 File Manager</div><div class="mi" onclick="openWin('settings');menu()">⚙ Settings</div><div class="mi" onclick="openWin('about');menu()">ⓘ About</div></div>
+<div id="dock"><button onclick="menu()">☰</button><button onclick="openWin('terminal')">⌨</button><button onclick="openWin('files')">📁</button><button onclick="openWin('settings')">⚙</button></div>
+
+<script>
+const out=document.getElementById("out"),input=document.getElementById("input");
+let history=JSON.parse(localStorage.getItem("kali_history")||"[]"),hi=history.length;
+let fs=JSON.parse(localStorage.getItem("kali_fs")||"null"),cwd="/home/kali",z=20;
+if(!fs)fs={"/":{t:"d",c:["/home","/home/kali","/tmp","/var","/etc"]},"/home":{t:"d",c:["/home/kali"]},"/home/kali":{t:"d",c:["/home/kali/readme.txt"]},"/home/kali/readme.txt":{t:"f",x:"Welcome to Kali Web OS.\\n\\nTry: help, ls, pwd, neofetch, hash hello, encode hello, scan 192.168.1.0/24"},"/tmp":{t:"d",c:[]},"/var":{t:"d",c:[]},"/etc":{t:"d",c:[]}};
+save();print("Kali Web OS v1.0\\nBrowser-based cybersecurity learning environment.\\n\\nType 'help' to see available commands.\\n");
+function save(){localStorage.setItem("kali_fs",JSON.stringify(fs))}
+function print(s=""){out.textContent+=s+"\\n";document.getElementById("term").scrollTop=999999}
+function clearOutput(){out.textContent=""}
+function path(p){if(!p)return cwd;if(p[0]!="/")p=cwd+"/"+p;let a=[];p.split("/").forEach(x=>{if(!x||x===".")return;if(x==="..")a.pop();else a.push(x)});return "/"+a.join("/")}
+function openWin(id){let w=document.getElementById(id);w.classList.add("active");w.style.zIndex=++z;if(id==="terminal")setTimeout(focusTerm,30)}
+function closeWin(id){document.getElementById(id).classList.remove("active")}
+function maxWin(id){let w=document.getElementById(id);if(w.dataset.max==="1"){w.style.cssText="";w.classList.add("active");w.style.zIndex=++z;w.dataset.max="0"}else{w.style.left=0;w.style.top="42px";w.style.width="100%";w.style.height="calc(100% - 100px)";w.dataset.max="1"}}
+function focusTerm(){input.focus()}
+function menu(){let m=document.getElementById("menu");m.style.display=m.style.display==="block"?"none":"block"}
+function fullscreen(){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+function resetSystem(){if(confirm("Delete the virtual filesystem and command history?")){localStorage.removeItem("kali_fs");localStorage.removeItem("kali_history");location.reload()}}
+function help(){print("SYSTEM\\n  help clear pwd whoami hostname date uname neofetch\\nFILES\\n  ls cd mkdir touch cat rm cp mv grep find\\nUTILITIES\\n  echo history open\\nCYBER LAB\\n  scan <target> hash <text> encode <text> decode <base64>\\n\\nNetwork scanning is simulated inside the browser lab.")}
+function ls(a){let p=path(a[0]);let n=fs[p];if(!n){print("ls: no such file or directory");return}if(n.t==="f"){print(p.split("/").pop());return}n.c.forEach(q=>print(q.split("/").filter(Boolean).pop()+(fs[q].t==="d"?"/":"")))}
+function cd(a){let p=path(a[0]||"/home/kali");if(fs[p]&&fs[p].t==="d")cwd=p;else print("cd: no such directory: "+(a[0]||""))}
+function parent(p){return p.slice(0,p.lastIndexOf("/"))||"/"}
+function mkdir(a){if(!a[0])return print("mkdir: missing operand");let p=path(a[0]),par=parent(p);if(fs[p])return print("mkdir: already exists");if(!fs[par]||fs[par].t!=="d")return print("mkdir: parent does not exist");fs[p]={t:"d",c:[]};fs[par].c.push(p);save();refreshFiles();print("Created directory: "+p)}
+function touch(a){if(!a[0])return print("touch: missing file name");let p=path(a[0]),par=parent(p);if(fs[p])return print("File already exists");if(!fs[par])return print("touch: parent does not exist");fs[p]={t:"f",x:""};fs[par].c.push(p);save();refreshFiles();print("Created file: "+p)}
+function cat(a){if(!a[0])return print("cat: missing file");let n=fs[path(a[0])];if(!n)return print("cat: no such file or directory");if(n.t==="d")return print("cat: is a directory");print(n.x)}
+function rm(a){if(!a[0])return print("rm: missing operand");let p=path(a[0]);if(!fs[p])return print("rm: no such file");if(fs[p].t==="d"&&fs[p].c.length)return print("rm: directory not empty");let par=parent(p);fs[par].c=fs[par].c.filter(x=>x!==p);delete fs[p];save();refreshFiles();print("Removed "+p)}
+function echo(a){print(a.join(" "))}
+function hist(){history.forEach((x,i)=>print(String(i+1).padStart(3," ")+"  "+x))}
+function neofetch(){print("        KALI WEB OS\\n\\nOS: Kali Web OS\\nKernel: Browser\\nShell: KaliWebShell\\nUser: kali\\nHost: kali-web\\nStorage: LocalStorage\\nNetwork: Browser Sandbox")}
+async function hash(a){if(!a.length)return print("hash: missing text");let b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(a.join(" ")));print([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""))}
+function enc(a){if(!a.length)return print("encode: missing text");print(btoa(unescape(encodeURIComponent(a.join(" ")))))}
+function dec(a){try{print(decodeURIComponent(escape(atob(a.join("")))))}catch(e){print("decode: invalid Base64")}}
+function scan(a){let t=a[0]||"192.168.1.0/24";print("[+] Kali Web Network Lab\\n[+] Target: "+t+"\\n[+] Simulated lab scan.\\n");setTimeout(()=>print("Host: 192.168.1.1\\n  22/tcp    open    ssh\\n  80/tcp    open    http\\n  443/tcp   open    https\\n\\nHost: 192.168.1.20\\n  80/tcp    open    http\\n  443/tcp   open    https\\n\\nHost: 192.168.1.30\\n  No open ports detected\\n\\n[+] Scan finished."),500)}
+async function run(s){let a=s.match(/(?:[^\\s"]+|"[^"]*")+/g)||[],c=(a.shift()||"").toLowerCase();a=a.map(x=>x.replace(/^"|"$/g,""));print("kali@web:"+cwd+"$ "+s);switch(c){case"help":help();break;case"clear":clearOutput();break;case"pwd":print(cwd);break;case"whoami":print("kali");break;case"hostname":print("kali-web");break;case"date":print(new Date().toString());break;case"uname":print("Kali Web OS browser environment");break;case"neofetch":neofetch();break;case"ls":ls(a);break;case"cd":cd(a);break;case"mkdir":mkdir(a);break;case"touch":touch(a);break;case"cat":cat(a);break;case"rm":rm(a);break;case"echo":echo(a);break;case"history":hist();break;case"hash":await hash(a);break;case"encode":enc(a);break;case"decode":dec(a);break;case"scan":scan(a);break;case"open":if(a[0])openWin(a[0].toLowerCase()==="files"?"files":a[0].toLowerCase()==="settings"?"settings":a[0].toLowerCase()==="about"?"about":"terminal");break;default:print(c+": command not found. Type 'help'.")}}
+input.addEventListener("keydown",e=>{if(e.key==="Enter"){let s=input.value.trim();if(!s)return;run(s);history.push(s);if(history.length>100)history.shift();localStorage.setItem("kali_history",JSON.stringify(history));hi=history.length;input.value=""}else if(e.key==="ArrowUp"){e.preventDefault();if(hi>0)input.value=history[--hi]}else if(e.key==="ArrowDown"){e.preventDefault();if(hi<history.length-1)input.value=history[++hi];else{hi=history.length;input.value=""}}});
+function refreshFiles(){let g=document.getElementById("filegrid");g.innerHTML="";Object.keys(fs).filter(x=>x!=="/").forEach(p=>{let n=fs[p],d=document.createElement("div");d.className="file";d.innerHTML='<div class="fi">'+(n.t==="d"?"📁":"📄")+'</div><div>'+p.split("/").filter(Boolean).pop()+'</div>';g.appendChild(d)})}refreshFiles();
+function clock(){document.getElementById("clock").textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}clock();setInterval(clock,1000);
+document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==="t"){e.preventDefault();openWin("terminal")}if(e.key==="Escape")document.getElementById("menu").style.display="none"});
+document.querySelectorAll(".win").forEach(w=>{let h=w.querySelector(".head"),drag=false,ox=0,oy=0;h.addEventListener("mousedown",e=>{if(e.target.tagName==="BUTTON")return;drag=true;let r=w.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;w.style.zIndex=++z});document.addEventListener("mousemove",e=>{if(drag){w.style.left=Math.max(0,e.clientX-ox)+"px";w.style.top=Math.max(42,e.clientY-oy)+"px"}});document.addEventListener("mouseup",()=>drag=false)});
+</script>
+</body>
+</html>
