@@ -415,8 +415,7 @@ function showSearchResult(title,body,url){
   const p=document.createElement('div');p.textContent=body;card.appendChild(p);
   if(url){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Open source ↗';card.appendChild(document.createElement('br'));card.appendChild(a)}
   box.appendChild(card);
-  const tools=document.createElement('div');tools.className='searchtools';
-  const save=document.createElement('button');save.className='btn';save.textContent='Save this answer offline';save.onclick=()=>{cacheSearchResult(lastSearchQuestion,body,url,'Saved answer');searchStatus('Saved locally. This answer is now available offline.')};tools.appendChild(save);box.appendChild(tools);
+  const saved=document.createElement('div');saved.className='searchsmall';saved.textContent='✓ Answer saved automatically to offline knowledge.';box.appendChild(saved);
 }
 async function checkSearchConnection(){
   if(!navigator.onLine){searchStatus('● OFFLINE · Local knowledge and saved answers are ready.');return}
