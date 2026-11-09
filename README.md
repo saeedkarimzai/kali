@@ -50,3 +50,22 @@ Saved answers and search history are normally stored in the browser profile, not
 This transfers your saved answers, cached answers, and search history. Export a fresh backup whenever you want to take your newest knowledge with you.
 
 The app is tiny compared with a 32 GB USB drive. If you meant a 32 MB drive, it should still fit easily too. Internet-only DuckDuckGo searches will not work while Wi-Fi is disconnected, but built-in answers and imported/saved knowledge will.
+
+
+## Persistent terminal, desktop, and real folder access
+
+- The virtual filesystem is saved automatically in the current browser. It survives page reloads in that browser profile.
+- Starter folders include `~/Desktop`, `~/Documents`, `~/Downloads`, and `~/Projects`.
+- Files and folders placed in `~/Desktop` appear as clickable desktop icons.
+- The terminal output, command history, and current virtual working directory are also saved locally.
+- The File Manager has Up, Home, Desktop, and Refresh navigation.
+- Use **Mount real folder** to choose a real folder on your computer or USB drive. Terminal commands and the File Manager then work inside that selected folder, rather than the virtual filesystem.
+- On supported HTTPS Chrome sessions, Kali remembers the mounted folder handle in IndexedDB and reconnects automatically if the browser still grants permission. Otherwise, choose Mount real folder again to approve access.
+
+## Automatic search learning and USB backup
+
+- Every answer Kali Search can actually retrieve is automatically added to its offline cache. Built-in calculator and knowledge answers are cached too.
+- If a real folder or USB drive is mounted, Kali also updates `kali-search-knowledge.json` in that folder automatically after each new cached answer.
+- Search answers and history are stored in browser local storage as well. The USB JSON file makes the knowledge portable to another device; import it using **IMPORT OFFLINE BRAIN**.
+- DuckDuckGo's Instant Answer API only returns short answers/abstracts for some queries. If it provides no answer, Kali can open full DuckDuckGo results in a new tab, but the browser page cannot automatically read or save the contents of that separate search page. Those results need an answer source that Kali can access before they can be learned.
+- This remains a browser-based simulator, not a full Linux installation. Real folder access is limited to the folder the user explicitly selects and the permissions the browser grants.
