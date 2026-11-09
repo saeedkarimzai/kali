@@ -74,3 +74,7 @@ The app is tiny compared with a 32 GB USB drive. If you meant a 32 MB drive, it 
 ## Offline video library
 
 Open **Offline Videos** from the desktop, application menu, or dock. Choose **Add videos** and select video files from Downloads or a USB drive. Kali stores imported video files in the browser's IndexedDB storage, so they remain available for offline playback in that same browser profile after restarting the app. The library supports adding multiple files, playback controls, a saved playlist, removing individual videos, and clearing the library. Actual playback formats depend on the browser's codec support. Imported videos use local browser storage, not the GitHub repository or a cloud account; available storage limits vary, so very large files may fail to import if the browser quota is insufficient.
+
+### Saved YouTube links
+
+The Offline Videos window also accepts YouTube video URLs. Paste a standard watch URL, youtu.be link, Shorts URL, or supported embed URL and choose Save. Kali stores up to 500 saved video links in browser localStorage and can play them through YouTube's privacy-enhanced embed player while online. These are bookmarks, not downloaded video files: playback requires internet, and saving a link does not make the YouTube video available offline.
