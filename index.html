@@ -243,6 +243,7 @@ function showSearchHistory(){
 document.getElementById('searchquery').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
 
 function clock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}clock();setInterval(clock,1000);refreshPrompt();refreshFiles();
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==='t'){e.preventDefault();openWin('terminal')}if(e.key==='Escape')document.getElementById('menu').style.display='none'});
 document.querySelectorAll('.win').forEach(w=>{let h=w.querySelector('.head'),drag=false,ox=0,oy=0;h.onmousedown=e=>{if(e.target.tagName==='BUTTON')return;drag=true;let r=w.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;w.style.zIndex=++z};document.addEventListener('mousemove',e=>{if(drag){w.style.left=Math.max(0,e.clientX-ox)+'px';w.style.top=Math.max(42,e.clientY-oy)+'px'}});document.addEventListener('mouseup',()=>drag=false)})
 </script>
