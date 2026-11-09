@@ -1,0 +1,18 @@
+KALI USB EDITION - START HERE
+
+1. On GitHub, open the Kali repository.
+2. Click Code, then Download ZIP.
+3. Extract the ZIP using your Chromebook Files app.
+4. Copy the extracted kali-main folder to your USB drive.
+5. Open the USB drive, open kali-main, then open index.html in Chrome.
+
+You can copy only index.html if you want the smallest possible portable desktop. It is a self-contained webpage and does not need Wi-Fi to open.
+
+KALI SEARCH OFFLINE KNOWLEDGE:
+- Built-in answers and saved answers work without Wi-Fi.
+- In Kali Search, click EXPORT OFFLINE BRAIN and save kali-search-backup.json to this USB.
+- On another computer, open Kali and click IMPORT OFFLINE BRAIN to load that backup.
+- Export again whenever you want to carry your newest saved answers.
+
+NOTE:
+The search engine cannot fetch new web answers without internet. Your saved and built-in knowledge remains available offline. The app itself is tiny and fits easily on a 32 GB USB drive (and should also fit on a 32 MB drive).
