@@ -72,7 +72,7 @@ function clearOutput(){out.textContent='';localStorage.setItem('kali_terminal_ou
 function norm(p){if(!p)return cwd;if(!p.startsWith('/'))p=cwd+'/'+p;let a=[];for(const x of p.split('/')){if(!x||x=='.')continue;if(x=='..')a.pop();else a.push(x)}return '/'+a.join('/')}
 function parent(p){return p.slice(0,p.lastIndexOf('/'))||'/'}
 function base(p){return p.split('/').filter(Boolean).pop()||'/'}
-function refreshPrompt(){promptEl.textContent='kali@web:'+(realDirHandle?realPathLabel():cwd.replace('/home/kali','~'))+'
+function refreshPrompt(){promptEl.textContent='kali@web:'+(realDirHandle?realPathLabel():cwd.replace('/home/kali','~'))+'$';document.querySelector('#terminal .title').textContent='kali@web: '+(realDirHandle?realPathLabel():cwd);if(!realDirHandle)localStorage.setItem('kali_cwd',cwd)}
 function openWin(id){const w=document.getElementById(id);w.classList.add('active');w.style.zIndex=++z;if(id==='terminal')setTimeout(focusTerm,30);if(id==='files')refreshFiles();if(id==='search')checkSearchConnection()}
 function closeWin(id){document.getElementById(id).classList.remove('active')}
 function maxWin(id){const w=document.getElementById(id);if(w.dataset.max==='1'){w.style.left='';w.style.top='';w.style.width='';w.style.height='';w.dataset.max='0'}else{w.style.left='0';w.style.top='42px';w.style.width='100%';w.style.height='calc(100% - 100px)';w.dataset.max='1'}}
