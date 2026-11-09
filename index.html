@@ -60,7 +60,7 @@ if(!fs)fs={'/':{t:'d',c:['/home','/tmp','/var','/etc']},'/home':{t:'d',c:['/home
 function ensureVirtualDirectory(path){let parts=path.split('/').filter(Boolean),current='/';for(const part of parts){let next=(current==='/'?'':current)+'/'+part;if(!fs[current])fs[current]={t:'d',c:[]};if(!fs[next])fs[next]={t:'d',c:[]};if(!fs[current].c.includes(next))fs[current].c.push(next);current=next}}
 ['/home/kali/Desktop','/home/kali/Documents','/home/kali/Downloads','/home/kali/Projects'].forEach(ensureVirtualDirectory);
 if(!fs['/home/kali/readme.txt']){fs['/home/kali/readme.txt']={t:'f',x:'Welcome to Kali Web OS!\n\nYour virtual files are saved automatically in this browser.'};if(!fs['/home/kali'].c.includes('/home/kali/readme.txt'))fs['/home/kali'].c.push('/home/kali/readme.txt')}
-let cwd=localStorage.getItem('kali_cwd')||'/home/kali';if(!fs[cwd]||fs[cwd].t!=='d')cwd='/home/kali';
+cwd=localStorage.getItem('kali_cwd')||'/home/kali';if(!fs[cwd]||fs[cwd].t!=='d')cwd='/home/kali';
 save();
 let realDirHandle=null,realCwdHandle=null,realCwdParts=[];
 const previousTerminal=localStorage.getItem('kali_terminal_output')||'';
