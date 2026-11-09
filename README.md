@@ -78,3 +78,7 @@ Open **Offline Videos** from the desktop, application menu, or dock. Choose **Ad
 ### Saved YouTube links
 
 The Offline Videos window also accepts YouTube video URLs. Paste a standard watch URL, youtu.be link, Shorts URL, or supported embed URL and choose Save. Kali stores up to 500 saved video links in browser localStorage and can play them through YouTube's privacy-enhanced embed player while online. These are bookmarks, not downloaded video files: playback requires internet, and saving a link does not make the YouTube video available offline.
+
+### MP4 conversion and USB export
+
+In Offline Videos, choose **Convert to MP4 + save** and select source videos. Kali uses FFmpeg.wasm in the browser to transcode supported inputs to H.264 video with AAC audio in an MP4 container. On supported secure Chrome sessions, choose a USB folder and Kali writes the converted files into an **MP4 Videos** subfolder. If folder access is unavailable, the browser downloads the MP4 files so they can be copied to the USB manually. The converter downloads its FFmpeg JavaScript and WebAssembly components from jsDelivr the first time it is used, so the initial conversion needs internet; it is not a guaranteed offline-first converter. Conversion is CPU- and memory-intensive, especially for large videos, and output time and quality depend on the source and device. **Copy originals to USB** remains available when no conversion is needed.
