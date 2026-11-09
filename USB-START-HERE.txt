@@ -16,3 +16,14 @@ KALI SEARCH OFFLINE KNOWLEDGE:
 
 NOTE:
 The search engine cannot fetch new web answers without internet. Your saved and built-in knowledge remains available offline. The app itself is tiny and fits easily on a 32 GB USB drive (and should also fit on a 32 MB drive).
+
+
+AUTOMATIC SEARCH SAVING DIRECTLY TO USB:
+1. Plug in your USB drive.
+2. Open Kali's File Manager.
+3. Click "Mount real folder" and choose a folder on the USB drive.
+4. Search answers in Kali Search as usual.
+5. Kali automatically writes/updates kali-search-knowledge.json in the mounted USB folder. No manual export is needed while the folder is mounted and permission remains available.
+6. On another computer, mount that USB folder and choose IMPORT OFFLINE BRAIN to load the saved knowledge into that browser.
+
+The browser still keeps a local copy too. DuckDuckGo instant-answer results can be saved automatically; full DuckDuckGo pages opened in a separate tab cannot be read automatically by the simulator.
