@@ -13,6 +13,12 @@
 .files{height:calc(100% - 36px);padding:12px;overflow:auto}.toolbar{padding:9px;border:1px solid #333;background:#151716;color:#aaa;font:12px monospace}.filegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:10px;margin-top:12px}.file{padding:13px 8px;text-align:center;border:1px solid #333;border-radius:6px;cursor:pointer}.file:hover{border-color:#00ff9d}.fi{font-size:30px;margin-bottom:6px}.settings,.about,.editor{padding:18px;line-height:1.55;overflow:auto;height:calc(100% - 36px)}h2{color:#00ff9d;margin-top:0}.btn{background:#141615;color:#eee;border:1px solid #444;padding:8px 11px;border-radius:5px;cursor:pointer}.btn:hover{border-color:#00ff9d}.editor textarea{width:100%;height:300px;background:#050605;color:#eee;border:1px solid #444;padding:10px;font:13px monospace;resize:vertical}.editor input{width:100%;background:#080a09;color:#fff;border:1px solid #444;padding:8px;margin-bottom:8px}
 #dock{position:absolute;left:0;right:0;bottom:0;height:58px;z-index:1000;display:flex;justify-content:center;align-items:center;gap:9px;background:#090a0af2;border-top:1px solid #333}#dock button{width:43px;height:43px;background:#171918;color:#fff;border:1px solid #333;border-radius:8px;font-size:19px;cursor:pointer}#dock button:hover{color:#00ff9d;border-color:#00ff9d}
 #menu{position:absolute;left:10px;bottom:66px;width:315px;z-index:2000;display:none;padding:14px;background:#0b0c0cf7;border:1px solid #444;border-radius:8px;box-shadow:0 15px 50px #000}.mi{padding:10px;border-radius:5px;cursor:pointer}.mi:hover{background:#202321;color:#00ff9d}
+
+#search .searchapp{height:calc(100% - 36px);overflow:auto;padding:18px;background:linear-gradient(145deg,#07100d,#0a0d0c)}
+.searchbrand{font-size:25px;font-weight:800;letter-spacing:2px;color:#00ff9d;margin-bottom:5px}.searchsub{color:#91a39a;font-size:12px;margin-bottom:18px}
+.searchrow{display:flex;gap:8px}.searchrow input,.saveanswer{min-width:0;flex:1;background:#030806;color:#fff;border:1px solid #365247;border-radius:7px;padding:12px;font:14px Arial}.searchrow input:focus,.saveanswer:focus{outline:1px solid #00ff9d;border-color:#00ff9d}
+.searchbtn{background:#00c982;color:#00170e;border:0;border-radius:7px;padding:0 17px;font-weight:700;cursor:pointer}.searchstatus{font:12px monospace;color:#a9c5b7;margin:12px 0}.searchresult{border:1px solid #294237;background:#0c1511;border-radius:8px;padding:14px;margin:10px 0;white-space:pre-wrap;line-height:1.5}.searchresult h3{color:#00ff9d;margin:0 0 8px;font-size:15px}.searchresult a{color:#73dcb3}.searchtools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.searchtools .btn{font-size:12px}.searchsmall{font-size:11px;color:#82968c}.saveanswer{width:100%;min-height:75px;display:block;margin-top:8px;resize:vertical}.searchlist{display:grid;gap:6px}.searchitem{display:flex;justify-content:space-between;gap:10px;padding:8px;border-bottom:1px solid #26352e;color:#cbd8d1;font-size:12px}.searchitem button{background:none;border:0;color:#00ff9d;cursor:pointer}
+
 @media(max-width:800px){.win{left:3%;top:55px;width:94%;height:76%}.center{display:none}}
 </style>
 </head>
@@ -21,6 +27,7 @@
 <div id="icons">
 <div class="icon" onclick="openWin('terminal')"><div class="ibox">⌨</div><span>Terminal</span></div>
 <div class="icon" onclick="openWin('files')"><div class="ibox">📁</div><span>Files</span></div>
+<div class="icon" onclick="openWin('search')"><div class="ibox">🌐</div><span>Search Engine</span></div>
 <div class="icon" onclick="openWin('editor')"><div class="ibox">📝</div><span>Editor</span></div>
 <div class="icon" onclick="openWin('lab')"><div class="ibox">🛡</div><span>Cyber Lab</span></div>
 <div class="icon" onclick="openWin('settings')"><div class="ibox">⚙</div><span>Settings</span></div>
@@ -29,9 +36,21 @@
 <div class="win" id="files"><div class="head"><div class="title">File Manager</div><div class="buttons"><button class="yellow" onclick="closeWin('files')"></button><button class="green" onclick="maxWin('files')"></button><button class="red" onclick="closeWin('files')"></button></div></div><div class="files"><div class="toolbar" id="pathbar"></div><button class="btn" onclick="mountReal()">Mount / Choose Folder</button> <button class="btn" onclick="refreshFiles()">Refresh</button><div class="filegrid" id="filegrid"></div></div></div>
 <div class="win" id="editor"><div class="head"><div class="title">Text Editor</div><div class="buttons"><button class="yellow" onclick="closeWin('editor')"></button><button class="green" onclick="maxWin('editor')"></button><button class="red" onclick="closeWin('editor')"></button></div></div><div class="editor"><h2>Text Editor</h2><input id="editpath" placeholder="/file.txt"><textarea id="edittext" placeholder="File contents..."></textarea><button class="btn" onclick="editorLoad()">Load</button> <button class="btn" onclick="editorSave()">Save</button> <button class="btn" onclick="downloadCurrent()">Download</button></div></div>
 <div class="win" id="lab"><div class="head"><div class="title">Cyber Lab</div><div class="buttons"><button class="yellow" onclick="closeWin('lab')"></button><button class="green" onclick="maxWin('lab')"></button><button class="red" onclick="closeWin('lab')"></button></div></div><div class="about"><h2>Local Cybersecurity Lab</h2><p>Targets are simulated and exist only inside this page.</p><p><button class="btn" onclick="labScan()">Run simulated scan</button></p><pre id="labout"></pre><p><button class="btn" onclick="ctf1()">CTF 1: Hash Challenge</button> <button class="btn" onclick="ctf2()">CTF 2: Encoding Challenge</button></p><pre id="ctfout"></pre></div></div>
+
+<div class="win" id="search"><div class="head"><div class="title">Kali Offline Search Engine</div><div class="buttons"><button class="yellow" onclick="closeWin('search')"></button><button class="green" onclick="maxWin('search')"></button><button class="red" onclick="closeWin('search')"></button></div></div>
+<div class="searchapp">
+  <div class="searchbrand">KALI SEARCH</div><div class="searchsub">Your local knowledge base + DuckDuckGo instant answers</div>
+  <div class="searchrow"><input id="searchquery" placeholder="Ask anything or search the web..." autocomplete="off"><button class="searchbtn" onclick="doSearch()">SEARCH</button></div>
+  <div class="searchstatus" id="searchstatus">Checking connection...</div>
+  <div class="searchtools"><button class="btn" onclick="openDuckSearch()">Open full DuckDuckGo results ↗</button><button class="btn" onclick="showSavedSearches()">Saved offline answers</button><button class="btn" onclick="showSearchHistory()">Search history</button></div>
+  <div id="searchresults"><div class="searchresult"><h3>Welcome to Kali Search</h3>Try “what's one plus one?” or search for something online. Answers you save are kept in this browser and work offline.</div></div>
+  <div id="searchsavebox" style="display:none"><h3 style="color:#00ff9d">Save a result to your offline knowledge</h3><div class="searchsmall" id="savequestion"></div><textarea id="saveanswer" class="saveanswer" placeholder="Write the answer you want Kali Search to remember..."></textarea><div class="searchtools"><button class="searchbtn" onclick="saveOfflineAnswer()">SAVE OFFLINE</button><button class="btn" onclick="document.getElementById('searchsavebox').style.display='none'">Cancel</button></div></div>
+  <p class="searchsmall">Offline answers and saved results stay in this browser's local storage. DuckDuckGo instant answers need internet. Full web results open on DuckDuckGo because many search engines block embedding inside other websites.</p>
+</div></div>
+
 <div class="win" id="settings"><div class="head"><div class="title">Settings</div><div class="buttons"><button class="yellow" onclick="closeWin('settings')"></button><button class="green" onclick="maxWin('settings')"></button><button class="red" onclick="closeWin('settings')"></button></div></div><div class="settings"><h2>System Settings</h2><p><button class="btn" onclick="fullscreen()">Enter Fullscreen</button></p><p><button class="btn" onclick="clearOutput()">Clear Terminal</button></p><p><button class="btn" onclick="exportSystem()">Export Virtual System JSON</button> <button class="btn" onclick="importSystem()">Import JSON</button></p><p><button class="btn" onclick="resetSystem()">Reset Virtual System</button></p><p>The mounted folder is accessed through the browser File System Access API. It is the root for the real shell, but the browser still cannot become a real Linux kernel or access raw network interfaces.</p></div></div>
-<div id="menu"><h2>KALI WEB</h2><div class="mi" onclick="openWin('terminal');menu()">⌨ Terminal</div><div class="mi" onclick="openWin('files');menu()">📁 File Manager</div><div class="mi" onclick="openWin('editor');menu()">📝 Text Editor</div><div class="mi" onclick="openWin('lab');menu()">🛡 Cyber Lab</div><div class="mi" onclick="openWin('settings');menu()">⚙ Settings</div></div>
-<div id="dock"><button onclick="menu()">☰</button><button onclick="openWin('terminal')">⌨</button><button onclick="openWin('files')">📁</button><button onclick="openWin('editor')">📝</button><button onclick="openWin('lab')">🛡</button></div>
+<div id="menu"><h2>KALI WEB</h2><div class="mi" onclick="openWin('terminal');menu()">⌨ Terminal</div><div class="mi" onclick="openWin('files');menu()">📁 File Manager</div><div class="mi" onclick="openWin('search');menu()">🌐 Search Engine</div><div class="mi" onclick="openWin('editor');menu()">📝 Text Editor</div><div class="mi" onclick="openWin('lab');menu()">🛡 Cyber Lab</div><div class="mi" onclick="openWin('settings');menu()">⚙ Settings</div></div>
+<div id="dock"><button onclick="menu()">☰</button><button onclick="openWin('terminal')">⌨</button><button onclick="openWin('files')">📁</button><button onclick="openWin('search')">🌐</button><button onclick="openWin('editor')">📝</button><button onclick="openWin('lab')">🛡</button></div>
 <script>
 const out=document.getElementById('out'),input=document.getElementById('input'),promptEl=document.getElementById('prompt');
 let history=JSON.parse(localStorage.getItem('kali_history')||'[]'),hi=history.length,z=20,cwd='/home/kali';
@@ -115,6 +134,114 @@ function importSystem(){let i=document.createElement('input');i.type='file';i.ac
 function labScan(){document.getElementById('labout').textContent=scan('lab.local')}
 async function ctf1(){let secret='chromebook',b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(secret)),h=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');document.getElementById('ctfout').textContent='CTF 1\nFind the original word for this SHA-256 hash:\n'+h+'\n\nHint: it is a common device word.'}
 function ctf2(){document.getElementById('ctfout').textContent='CTF 2\nDecode this Base64 string:\nS2FsaSBXZWJcbiBMQWI='}
+
+const KALI_SEARCH_CACHE_KEY='kali_search_cache_v1';
+const KALI_SEARCH_HISTORY_KEY='kali_search_history_v1';
+const KALI_SEARCH_SAVED_KEY='kali_search_saved_v1';
+let kaliSearchCache=JSON.parse(localStorage.getItem(KALI_SEARCH_CACHE_KEY)||'[]');
+let kaliSearchHistory=JSON.parse(localStorage.getItem(KALI_SEARCH_HISTORY_KEY)||'[]');
+let kaliSearchSaved=JSON.parse(localStorage.getItem(KALI_SEARCH_SAVED_KEY)||'[]');
+let lastSearchQuestion='';
+function searchStatus(t){const e=document.getElementById('searchstatus');if(e)e.textContent=t}
+function searchNorm(s){return String(s||'').toLowerCase().replace(/[^a-z0-9+*/().\- ]/g,' ').replace(/\s+/g,' ').trim()}
+function calculateSearchMath(input){
+  let s=String(input).toLowerCase().replace(/what is|what's|calculate|solve|equals|equal to|how much is|answer to/g,'').replace(/\?/g,'').trim();
+  s=s.replace(/plus/g,'+').replace(/added to/g,'+').replace(/minus/g,'-').replace(/subtract/g,'-').replace(/times|multiplied by|x/g,'*').replace(/divided by|over/g,'/');
+  const words={zero:'0',one:'1',two:'2',three:'3',four:'4',five:'5',six:'6',seven:'7',eight:'8',nine:'9',ten:'10',eleven:'11',twelve:'12',thirteen:'13',fourteen:'14',fifteen:'15',sixteen:'16',seventeen:'17',eighteen:'18',nineteen:'19',twenty:'20'};
+  for(const [w,n] of Object.entries(words))s=s.replace(new RegExp('\\b'+w+'\\b','g'),n);
+  s=s.replace(/[^0-9+*/().\-\s]/g,'').trim();
+  if(!s||!/[+*/-]/.test(s)||!/^[-+*/().0-9\s]+$/.test(s))return null;
+  const tokens=s.match(/\d+(?:\.\d+)?|[()+*/-]/g)||[];let i=0;
+  function primary(){let t=tokens[i++];if(t==='('){let v=expr();if(tokens[i++]!==')')throw Error();return v}if(t==='-')return-primary();if(t==='+')return primary();if(t===undefined||!/^\d/.test(t))throw Error();return Number(t)}
+  function term(){let v=primary();while(tokens[i]==='*'||tokens[i]==='/'){let op=tokens[i++],b=primary();v=op==='*'?v*b:v/b}return v}
+  function expr(){let v=term();while(tokens[i]==='+'||tokens[i]==='-'){let op=tokens[i++],b=term();v=op==='+'?v+b:v-b}return v}
+  try{let v=expr();if(i!==tokens.length||!Number.isFinite(v))return null;return String(Number(v.toFixed(10)))}catch(e){return null}
+}
+function localSearchAnswer(q){
+  const n=searchNorm(q);
+  const math=calculateSearchMath(q);
+  if(math!==null)return 'The answer is '+math+'.';
+  const builtin=[
+    {keys:['what is one plus one','whats one plus one','1+1','one plus one'],answer:'1 + 1 = 2.'},
+    {keys:['what is the capital of canada','capital of canada'],answer:'Ottawa is the capital of Canada.'},
+    {keys:['what is kali linux','kali linux'],answer:'Kali Linux is a Debian-based Linux distribution designed for penetration testing, security research, digital forensics, and security training.'},
+    {keys:['what is html'],answer:'HTML (HyperText Markup Language) is the standard markup language used to structure content on web pages.'},
+    {keys:['what is css'],answer:'CSS (Cascading Style Sheets) controls the appearance and layout of web pages.'},
+    {keys:['what is javascript'],answer:'JavaScript is a programming language used to add interactive behavior to websites and web applications.'}
+  ];
+  for(const item of builtin)if(item.keys.some(k=>n===searchNorm(k)||n.includes(searchNorm(k))))return item.answer;
+  const saved=[...kaliSearchSaved,...kaliSearchCache].reverse();
+  const hit=saved.find(x=>searchNorm(x.question)===n || (n.length>5&&searchNorm(x.question).includes(n)));
+  return hit?(hit.answer||hit.text||'Saved result found.') : null;
+}
+function cacheSearchResult(q,answer,url,source){
+  const item={question:q,answer:answer,url:url||'',source:source||'DuckDuckGo',savedAt:new Date().toISOString()};
+  kaliSearchCache=kaliSearchCache.filter(x=>searchNorm(x.question)!==searchNorm(q));
+  kaliSearchCache.unshift(item);kaliSearchCache=kaliSearchCache.slice(0,150);
+  localStorage.setItem(KALI_SEARCH_CACHE_KEY,JSON.stringify(kaliSearchCache));
+}
+function showSearchResult(title,body,url){
+  const box=document.getElementById('searchresults');box.innerHTML='';
+  const card=document.createElement('div');card.className='searchresult';
+  const h=document.createElement('h3');h.textContent=title;card.appendChild(h);
+  const p=document.createElement('div');p.textContent=body;card.appendChild(p);
+  if(url){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Open source ↗';card.appendChild(document.createElement('br'));card.appendChild(a)}
+  box.appendChild(card);
+  const tools=document.createElement('div');tools.className='searchtools';
+  const save=document.createElement('button');save.className='btn';save.textContent='Save this answer offline';save.onclick=()=>{cacheSearchResult(lastSearchQuestion,body,url,'Saved answer');searchStatus('Saved locally. This answer is now available offline.')};tools.appendChild(save);box.appendChild(tools);
+}
+async function checkSearchConnection(){
+  if(!navigator.onLine){searchStatus('● OFFLINE · Local knowledge and saved answers are ready.');return}
+  searchStatus('● CONNECTED TO NETWORK · Checking DuckDuckGo...');
+  try{const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),4500);await fetch('https://api.duckduckgo.com/?q=connection+test&format=json&no_html=1',{signal:ctl.signal,mode:'cors'});clearTimeout(timer);searchStatus('● INTERNET AVAILABLE · DuckDuckGo instant answers enabled.')}
+  catch(e){searchStatus('● NETWORK DETECTED, SEARCH API UNAVAILABLE · Offline answers still work.')}
+}
+async function doSearch(){
+  const inputEl=document.getElementById('searchquery'),q=inputEl.value.trim();if(!q)return;
+  lastSearchQuestion=q;document.getElementById('searchsavebox').style.display='none';
+  kaliSearchHistory.unshift({q,time:new Date().toLocaleString()});kaliSearchHistory=kaliSearchHistory.slice(0,100);localStorage.setItem(KALI_SEARCH_HISTORY_KEY,JSON.stringify(kaliSearchHistory));
+  const local=localSearchAnswer(q);
+  if(local){showSearchResult('Found in your offline knowledge',local,'');searchStatus('● OFFLINE RESULT · Answered from built-in or saved knowledge.');return}
+  if(!navigator.onLine){showSearchResult('No offline answer found','I do not have a saved answer for this question yet. Connect to the internet and search again, or add an answer below to teach Kali Search.','');searchStatus('● OFFLINE · No matching saved answer.');document.getElementById('savequestion').textContent=q;document.getElementById('searchsavebox').style.display='block';return}
+  searchStatus('Searching local knowledge, then DuckDuckGo...');
+  try{
+    const url='https://api.duckduckgo.com/?q='+encodeURIComponent(q)+'&format=json&no_html=1&skip_disambig=1';
+    const response=await fetch(url,{mode:'cors',headers:{'Accept':'application/json'}});
+    if(!response.ok)throw Error('Search service returned '+response.status);
+    const data=await response.json();
+    let answer=data.Answer||data.AbstractText||data.Definition||'';
+    let source=data.AbstractSource||data.DefinitionSource||'DuckDuckGo';
+    let link=data.AbstractURL||data.DefinitionURL||'';
+    if(!answer&&Array.isArray(data.RelatedTopics)){
+      const topic=data.RelatedTopics.find(x=>x.Text&&x.FirstURL)||data.RelatedTopics.flatMap(x=>x.Topics||[]).find(x=>x.Text&&x.FirstURL);
+      if(topic){answer=topic.Text;link=topic.FirstURL;source='DuckDuckGo related result'}
+    }
+    if(answer){cacheSearchResult(q,answer,link,source);showSearchResult(source,answer,link);searchStatus('● ONLINE ANSWER · Saved to your local search cache for next time.')}
+    else{showSearchResult('No instant answer returned','DuckDuckGo did not provide a short instant answer for this query. Open full search results to browse the web. You can also save your own answer below.','');searchStatus('● ONLINE · No instant answer. Full web search is available.');document.getElementById('savequestion').textContent=q;document.getElementById('searchsavebox').style.display='block'}
+  }catch(e){showSearchResult('Could not retrieve an instant answer','The network is available or may be restricted, but DuckDuckGo’s instant-answer API could not be reached from this page. Open full DuckDuckGo results instead, or save an answer manually.','');searchStatus('● ONLINE SEARCH API BLOCKED OR UNAVAILABLE · Use full DuckDuckGo search.');document.getElementById('savequestion').textContent=q;document.getElementById('searchsavebox').style.display='block'}
+}
+function openDuckSearch(){const q=document.getElementById('searchquery').value.trim();if(q)window.open('https://duckduckgo.com/?q='+encodeURIComponent(q),'_blank','noopener')}
+function saveOfflineAnswer(){
+  const answer=document.getElementById('saveanswer').value.trim();if(!answer)return;
+  const q=lastSearchQuestion;
+  kaliSearchSaved=kaliSearchSaved.filter(x=>searchNorm(x.question)!==searchNorm(q));
+  kaliSearchSaved.unshift({question:q,answer:answer,savedAt:new Date().toISOString()});
+  localStorage.setItem(KALI_SEARCH_SAVED_KEY,JSON.stringify(kaliSearchSaved));
+  document.getElementById('searchsavebox').style.display='none';document.getElementById('saveanswer').value='';
+  showSearchResult('Saved to offline knowledge',answer,'');searchStatus('Saved. Kali Search will use this answer next time, even without Wi-Fi.');
+}
+function showSavedSearches(){
+  const box=document.getElementById('searchresults');box.innerHTML='';const all=[...kaliSearchSaved,...kaliSearchCache];
+  const h=document.createElement('div');h.className='searchresult';h.textContent=all.length+' saved/cached answers. Select one to view it.';box.appendChild(h);
+  all.forEach((x,i)=>{const row=document.createElement('div');row.className='searchitem';const label=document.createElement('span');label.textContent=x.question;const b=document.createElement('button');b.textContent='VIEW';b.onclick=()=>{lastSearchQuestion=x.question;showSearchResult('Offline answer',x.answer||x.text||'',x.url||'');searchStatus('● LOCAL STORAGE · This answer is saved on this device.')};row.append(label,b);box.appendChild(row)});
+  if(!all.length)h.textContent='No saved answers yet. Search online or save your own answer.';
+}
+function showSearchHistory(){
+  const box=document.getElementById('searchresults');box.innerHTML='';const h=document.createElement('div');h.className='searchresult';h.textContent='Recent searches';box.appendChild(h);
+  kaliSearchHistory.forEach(x=>{const row=document.createElement('div');row.className='searchitem';const label=document.createElement('span');label.textContent=x.q+' · '+x.time;const b=document.createElement('button');b.textContent='SEARCH';b.onclick=()=>{document.getElementById('searchquery').value=x.q;doSearch()};row.append(label,b);box.appendChild(row)});
+}
+document.getElementById('searchquery').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
+
 function clock(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}clock();setInterval(clock,1000);refreshPrompt();refreshFiles();
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==='t'){e.preventDefault();openWin('terminal')}if(e.key==='Escape')document.getElementById('menu').style.display='none'});
 document.querySelectorAll('.win').forEach(w=>{let h=w.querySelector('.head'),drag=false,ox=0,oy=0;h.onmousedown=e=>{if(e.target.tagName==='BUTTON')return;drag=true;let r=w.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;w.style.zIndex=++z};document.addEventListener('mousemove',e=>{if(drag){w.style.left=Math.max(0,e.clientX-ox)+'px';w.style.top=Math.max(42,e.clientY-oy)+'px'}});document.addEventListener('mouseup',()=>drag=false)})
