@@ -42,10 +42,10 @@
   <div class="searchbrand">KALI SEARCH</div><div class="searchsub">Your local knowledge base + DuckDuckGo instant answers</div>
   <div class="searchrow"><input id="searchquery" placeholder="Ask anything or search the web..." autocomplete="off"><button class="searchbtn" onclick="doSearch()">SEARCH</button></div>
   <div class="searchstatus" id="searchstatus">Checking connection...</div>
-  <div class="searchtools"><button class="btn" onclick="openDuckSearch()">Open full DuckDuckGo results ↗</button><button class="btn" onclick="showSavedSearches()">Saved offline answers</button><button class="btn" onclick="showSearchHistory()">Search history</button></div>
+  <div class="searchtools"><button class="btn" onclick="openDuckSearch()">Open full DuckDuckGo results ↗</button><button class="btn" onclick="showSavedSearches()">Saved offline answers</button><button class="btn" onclick="showSearchHistory()">Search history</button><button class="btn" onclick="exportSearchBrain()">EXPORT OFFLINE BRAIN</button><button class="btn" onclick="document.getElementById('searchImportFile').click()">IMPORT OFFLINE BRAIN</button><input id="searchImportFile" type="file" accept="application/json,.json" style="display:none" onchange="importSearchBrain(event)"></div>
   <div id="searchresults"><div class="searchresult"><h3>Welcome to Kali Search</h3>Try “what's one plus one?” or search for something online. Answers you save are kept in this browser and work offline.</div></div>
   <div id="searchsavebox" style="display:none"><h3 style="color:#00ff9d">Save a result to your offline knowledge</h3><div class="searchsmall" id="savequestion"></div><textarea id="saveanswer" class="saveanswer" placeholder="Write the answer you want Kali Search to remember..."></textarea><div class="searchtools"><button class="searchbtn" onclick="saveOfflineAnswer()">SAVE OFFLINE</button><button class="btn" onclick="document.getElementById('searchsavebox').style.display='none'">Cancel</button></div></div>
-  <p class="searchsmall">Offline answers and saved results stay in this browser's local storage. DuckDuckGo instant answers need internet. Full web results open on DuckDuckGo because many search engines block embedding inside other websites.</p>
+  <p class="searchsmall">Offline answers work without Wi-Fi. Use EXPORT OFFLINE BRAIN to save your knowledge as a JSON file on your USB, then IMPORT OFFLINE BRAIN on another browser/device. DuckDuckGo instant answers need internet. Full web results open on DuckDuckGo because many search engines block embedding inside other websites.</p>
 </div></div>
 
 <div class="win" id="settings"><div class="head"><div class="title">Settings</div><div class="buttons"><button class="yellow" onclick="closeWin('settings')"></button><button class="green" onclick="maxWin('settings')"></button><button class="red" onclick="closeWin('settings')"></button></div></div><div class="settings"><h2>System Settings</h2><p><button class="btn" onclick="fullscreen()">Enter Fullscreen</button></p><p><button class="btn" onclick="clearOutput()">Clear Terminal</button></p><p><button class="btn" onclick="exportSystem()">Export Virtual System JSON</button> <button class="btn" onclick="importSystem()">Import JSON</button></p><p><button class="btn" onclick="resetSystem()">Reset Virtual System</button></p><p>The mounted folder is accessed through the browser File System Access API. It is the root for the real shell, but the browser still cannot become a real Linux kernel or access raw network interfaces.</p></div></div>
@@ -229,6 +229,30 @@ function saveOfflineAnswer(){
   localStorage.setItem(KALI_SEARCH_SAVED_KEY,JSON.stringify(kaliSearchSaved));
   document.getElementById('searchsavebox').style.display='none';document.getElementById('saveanswer').value='';
   showSearchResult('Saved to offline knowledge',answer,'');searchStatus('Saved. Kali Search will use this answer next time, even without Wi-Fi.');
+}
+function exportSearchBrain(){
+  const backup={app:'Kali Search',version:1,exportedAt:new Date().toISOString(),saved:kaliSearchSaved,cache:kaliSearchCache,history:kaliSearchHistory};
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='kali-search-backup.json';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  searchStatus('OFFLINE BRAIN EXPORTED. Save kali-search-backup.json onto your USB drive.');
+}
+async function importSearchBrain(event){
+  const file=event.target.files&&event.target.files[0];if(!file)return;
+  try{
+    const data=JSON.parse(await file.text());
+    if(!data||data.app!=='Kali Search'||!Array.isArray(data.saved)||!Array.isArray(data.cache))throw Error('That file is not a Kali Search backup.');
+    const merge=(current,incoming,key)=>{const map=new Map();[...current,...incoming].forEach(x=>{if(x&&typeof x==='object'&&x[key])map.set(searchNorm(x[key]),x)});return [...map.values()]};
+    kaliSearchSaved=merge(kaliSearchSaved,data.saved,'question').slice(0,500);
+    kaliSearchCache=merge(kaliSearchCache,data.cache,'question').slice(0,150);
+    kaliSearchHistory=Array.isArray(data.history)?[...data.history,...kaliSearchHistory].slice(0,200):kaliSearchHistory;
+    localStorage.setItem(KALI_SEARCH_SAVED_KEY,JSON.stringify(kaliSearchSaved));
+    localStorage.setItem(KALI_SEARCH_CACHE_KEY,JSON.stringify(kaliSearchCache));
+    localStorage.setItem(KALI_SEARCH_HISTORY_KEY,JSON.stringify(kaliSearchHistory));
+    showSavedSearches();searchStatus('IMPORT COMPLETE · Your USB backup is now loaded into this browser.');
+  }catch(err){searchStatus('IMPORT FAILED · '+err.message)}
+  event.target.value='';
 }
 function showSavedSearches(){
   const box=document.getElementById('searchresults');box.innerHTML='';const all=[...kaliSearchSaved,...kaliSearchCache];
