@@ -82,3 +82,8 @@ The Offline Videos window also accepts YouTube video URLs. Paste a standard watc
 ### MP4 conversion and USB export
 
 In Offline Videos, choose **Convert to MP4 + save** and select source videos. Kali uses FFmpeg.wasm in the browser to transcode supported inputs to H.264 video with AAC audio in an MP4 container. On supported secure Chrome sessions, choose a USB folder and Kali writes the converted files into an **MP4 Videos** subfolder. If folder access is unavailable, the browser downloads the MP4 files so they can be copied to the USB manually. The converter downloads its FFmpeg JavaScript and WebAssembly components from jsDelivr the first time it is used, so the initial conversion needs internet; it is not a guaranteed offline-first converter. Conversion is CPU- and memory-intensive, especially for large videos, and output time and quality depend on the source and device. **Copy originals to USB** remains available when no conversion is needed.
+
+
+## Video URL Converter app
+
+The desktop and application menu include **Video URL Converter**. It can accept a local video file or a direct video-file URL and pass it to the MP4 conversion/export workflow. Direct URL fetching depends on the source host allowing cross-origin browser requests (CORS). YouTube watch, Shorts, and youtu.be links are detected and previewed, but are not downloaded: YouTube does not provide this app with a public MP4 download endpoint. For a user's own upload, download it through YouTube Studio when available, then select the downloaded file for conversion. The MP4 converter loads FFmpeg.wasm from jsDelivr on first use and requires internet for that initial load.
