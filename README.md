@@ -69,3 +69,8 @@ The app is tiny compared with a 32 GB USB drive. If you meant a 32 MB drive, it 
 - Search answers and history are stored in browser local storage as well. The USB JSON file makes the knowledge portable to another device; import it using **IMPORT OFFLINE BRAIN**.
 - DuckDuckGo's Instant Answer API only returns short answers/abstracts for some queries. If it provides no answer, Kali can open full DuckDuckGo results in a new tab, but the browser page cannot automatically read or save the contents of that separate search page. Those results need an answer source that Kali can access before they can be learned.
 - This remains a browser-based simulator, not a full Linux installation. Real folder access is limited to the folder the user explicitly selects and the permissions the browser grants.
+
+
+## Offline video library
+
+Open **Offline Videos** from the desktop, application menu, or dock. Choose **Add videos** and select video files from Downloads or a USB drive. Kali stores imported video files in the browser's IndexedDB storage, so they remain available for offline playback in that same browser profile after restarting the app. The library supports adding multiple files, playback controls, a saved playlist, removing individual videos, and clearing the library. Actual playback formats depend on the browser's codec support. Imported videos use local browser storage, not the GitHub repository or a cloud account; available storage limits vary, so very large files may fail to import if the browser quota is insufficient.
