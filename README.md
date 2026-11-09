@@ -21,7 +21,7 @@ The desktop includes **Kali Search**, an offline-first search panel.
 - DuckDuckGo's Instant Answer API does not return a full list of normal web search results. Full results open on DuckDuckGo.
 - Some school or managed networks may block external search services.
 - This is a browser simulation, not a real Kali Linux kernel or unrestricted network scanner.
-- For reliable offline access, load the page once while online; the browser must still have the file/site available locally.
+- When hosted over HTTPS (for example, GitHub Pages), the included service worker caches the app shell after the first successful visit so the page can reopen offline. Open the site once while online and wait for it to finish loading before disconnecting. Opening the HTML as a local file also works offline, but service workers do not run from file:// URLs.
 
 ## Privacy
 Searches sent to DuckDuckGo leave your device and are handled by DuckDuckGo. Saved offline answers and history are stored in the browser's local storage.
