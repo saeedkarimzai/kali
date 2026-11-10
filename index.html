@@ -98,54 +98,28 @@ async function inspectVideoURL(){
  urlConvertStatus('Direct video URL detected. Checking whether its host permits browser download...');
 }
 async function convertURLVideo(){
- let file=urlConverterFile;
+ let file=urlConverterFile,folder=null;const status=message=>urlConvertStatus(message);
  if(!file){
   const value=document.getElementById('videoUrlInput').value.trim();
-  if(!value){urlConvertStatus('Paste a direct video URL or choose a local video file.');return}
-  if(isYoutubeURL(value)){urlConvertStatus('YouTube page URLs cannot be downloaded or extracted by this app. Download your own video through YouTube Studio when available, then choose that file.');return}
-  try{urlConvertStatus('Downloading source video from its host...');const response=await fetch(value);if(!response.ok)throw new Error('HTTP '+response.status);const blob=await response.blob();if(!blob.type.startsWith('video/')&&!/\.(mp4|webm|mov|m4v|ogv|avi|mkv)(?:$|[?#])/i.test(new URL(value).pathname+new URL(value).search))throw new Error('The URL did not return a recognizable video file');file=new File([blob],safeMP4Name(new URL(value).pathname.split('/').pop()||'downloaded-video').replace(/\.mp4$/i,'.source'),{type:blob.type||'application/octet-stream'})}catch(e){urlConvertStatus('Could not download this URL: '+e.message+'. The host may block browser access (CORS), or it may not be a direct video file.');return}
- }
- await convertVideosToMP4([file]);
- urlConvertStatus('Conversion finished or stopped. Check the Offline Videos window for the detailed export status.');
+  if(!value){status('Paste a direct video URL or choose a local video file.');return}
+  if(isYoutubeURL(value)){status('YouTube page URLs cannot be downloaded or extracted by this app. Download your own video through YouTube Studio when available, then choose that file.');return}
+  if(window.showDirectoryPicker){try{const root=await window.showDirectoryPicker({id:'kali-url-mp4-export',mode:'readwrite',startIn:'documents'});folder=await root.getDirectoryHandle('MP4 Videos',{create:true})}catch(e){if(e.name==='AbortError'){status('USB export cancelled.');return}status('USB folder access failed: '+e.message);return}}
+  try{status('Downloading source video from its host...');const response=await fetch(value);if(!response.ok)throw new Error('HTTP '+response.status);const blob=await response.blob(),parsed=new URL(value);if(!blob.type.startsWith('video/')&&!/\.(mp4|webm|mov|m4v|ogv|avi|mkv)(?:$|[?#])/i.test(parsed.pathname+parsed.search))throw new Error('The URL did not return a recognizable video file');const filename=decodeURIComponent(parsed.pathname.split('/').pop()||'downloaded-video');file=new File([blob],filename,{type:blob.type||'application/octet-stream'})}catch(e){status('Could not download this URL: '+e.message+'. The host may block browser access (CORS), or it may not be a direct video file.');return}
+ }else if(window.showDirectoryPicker){try{const root=await window.showDirectoryPicker({id:'kali-url-mp4-export',mode:'readwrite',startIn:'documents'});folder=await root.getDirectoryHandle('MP4 Videos',{create:true})}catch(e){if(e.name==='AbortError'){status('USB export cancelled.');return}status('USB folder access failed: '+e.message);return}}
+ const ok=await convertVideosToMP4([file],{folder,status});if(ok)status('Finished! Your real MP4 file is saved in USB / MP4 Videos, or downloaded by the browser.');
 }
-
 let kaliFFmpeg=null;
 let kaliFFmpegLoadPromise=null;
-async function getKaliFFmpeg(){
- if(kaliFFmpeg)return kaliFFmpeg;
- if(!kaliFFmpegLoadPromise)kaliFFmpegLoadPromise=(async()=>{
-  videoNotice('Loading MP4 converter. First use needs internet and may take a minute...');
-  const {FFmpeg}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');
-  const {toBlobURL}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js');
-  const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
-  const ff=new FFmpeg();
-  ff.on('progress',({progress})=>videoNotice('Converting video... '+Math.max(0,Math.min(100,Math.round(progress*100)))+'%'));
-  await ff.load({coreURL:await toBlobURL(base+'/ffmpeg-core.js','text/javascript'),wasmURL:await toBlobURL(base+'/ffmpeg-core.wasm','application/wasm'),workerURL:await toBlobURL(base+'/ffmpeg-core.worker.js','text/javascript')});
-  kaliFFmpeg=ff;return ff;
- })().catch(e=>{kaliFFmpegLoadPromise=null;throw e});
- return kaliFFmpegLoadPromise;
+let kaliProgressNotice=videoNotice;
+async function getKaliFFmpeg(status=videoNotice){
+ kaliProgressNotice=status;if(kaliFFmpeg)return kaliFFmpeg;
+ if(!kaliFFmpegLoadPromise)kaliFFmpegLoadPromise=(async()=>{status('Loading MP4 converter. First use needs internet and may take a minute...');const {FFmpeg}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js');const {toBlobURL}=await import('https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js');const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';const ff=new FFmpeg();ff.on('progress',({progress})=>kaliProgressNotice('Converting video... '+Math.max(0,Math.min(100,Math.round(progress*100)))+'%'));await ff.load({coreURL:await toBlobURL(base+'/ffmpeg-core.js','text/javascript'),wasmURL:await toBlobURL(base+'/ffmpeg-core.wasm','application/wasm'),workerURL:await toBlobURL(base+'/ffmpeg-core.worker.js','text/javascript')});kaliFFmpeg=ff;return ff})().catch(e=>{kaliFFmpegLoadPromise=null;throw e});return kaliFFmpegLoadPromise;
 }
 function safeMP4Name(name){const base=String(name||'video').replace(/\.[^.]+$/,'').replace(/[\\/:*?"<>|]/g,'_').trim()||'video';return base+'.mp4'}
-async function convertVideosToMP4(files){
- const chosen=Array.from(files||[]).filter(f=>f.type.startsWith('video/')||/\.(mp4|webm|ogv|mov|m4v|avi|mkv)$/i.test(f.name));
- if(!chosen.length){videoNotice('Choose one or more video files first.');return}
- let folder=null;
- if(window.showDirectoryPicker){try{const root=await window.showDirectoryPicker({id:'kali-mp4-export',mode:'readwrite',startIn:'documents'});folder=await root.getDirectoryHandle('MP4 Videos',{create:true})}catch(e){if(e.name==='AbortError'){videoNotice('MP4 export cancelled.');return}videoNotice('USB folder access failed: '+e.message);return}}
- try{
-  const ff=await getKaliFFmpeg();let done=0;
-  for(let i=0;i<chosen.length;i++){
-   const file=chosen[i],input='input_'+i+'_'+Date.now()+'.bin',output='output_'+i+'.mp4';
-   videoNotice('Preparing '+file.name+' ('+(i+1)+'/'+chosen.length+')...');
-   await ff.writeFile(input,new Uint8Array(await file.arrayBuffer()));
-   const result=await ff.exec(['-i',input,'-map','0:v:0','-map','0:a?','-c:v','libx264','-preset','ultrafast','-crf','23','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart',output]);
-   if(result!==0)throw new Error('FFmpeg could not convert '+file.name);
-   const data=await ff.readFile(output),blob=new Blob([data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength)],{type:'video/mp4'}),name=safeMP4Name(file.name);
-   if(folder){const handle=await folder.getFileHandle(name,{create:true});const writable=await handle.createWritable();await writable.write(blob);await writable.close()}
-   else{const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}
-   await ff.deleteFile(input).catch(()=>{});await ff.deleteFile(output).catch(()=>{});done++;
-  }
-  videoNotice('Converted '+done+' video(s) into real MP4 files '+(folder?'inside USB / MP4 Videos.':'and downloaded them. Move the MP4 files to your USB for offline playback.'));
- }catch(e){videoNotice('MP4 conversion failed: '+(e.message||e)+'. Try a smaller video or a supported input format.')}
+async function convertVideosToMP4(files,options={}){
+ const chosen=Array.from(files||[]).filter(f=>(f.type||'').startsWith('video/')||/\.(mp4|webm|ogv|mov|m4v|avi|mkv)$/i.test(f.name));const status=typeof options.status==='function'?options.status:videoNotice;if(!chosen.length){status('Choose one or more video files first.');return false}
+ let folder=options.folder||null;if(!folder&&window.showDirectoryPicker){try{const root=await window.showDirectoryPicker({id:'kali-mp4-export',mode:'readwrite',startIn:'documents'});folder=await root.getDirectoryHandle('MP4 Videos',{create:true})}catch(e){if(e.name==='AbortError'){status('MP4 export cancelled.');return false}status('USB folder access failed: '+e.message);return false}}
+ try{const ff=await getKaliFFmpeg(status);let done=0;for(let i=0;i<chosen.length;i++){const file=chosen[i],input='input_'+i+'_'+Date.now()+'.bin',output='output_'+i+'.mp4';status('Preparing '+file.name+' ('+(i+1)+'/'+chosen.length+')...');await ff.writeFile(input,new Uint8Array(await file.arrayBuffer()));const result=await ff.exec(['-i',input,'-map','0:v:0','-map','0:a?','-c:v','libx264','-preset','ultrafast','-crf','23','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart',output]);if(result!==0)throw new Error('FFmpeg could not convert '+file.name);const data=await ff.readFile(output),blob=new Blob([data.buffer.slice(data.byteOffset,data.byteOffset+data.byteLength)],{type:'video/mp4'}),name=safeMP4Name(file.name);if(folder){const handle=await folder.getFileHandle(name,{create:true}),writable=await handle.createWritable();await writable.write(blob);await writable.close()}else{const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000)}await ff.deleteFile(input).catch(()=>{});await ff.deleteFile(output).catch(()=>{});done++}status('Converted '+done+' video(s) into real MP4 files '+(folder?'inside USB / MP4 Videos.':'and downloaded them. Move the MP4 files to your USB for offline playback.'));return true}catch(e){status('MP4 conversion failed: '+(e.message||e)+'. Try a smaller video or a supported input format.');return false}
 }
 async function saveVideoFilesToUSB(files){const chosen=Array.from(files||[]).filter(f=>f.type.startsWith('video/')||/\.(mp4|webm|ogv|mov|m4v)$/i.test(f.name));if(!chosen.length){videoNotice('Choose video files first.');return}if(!window.showDirectoryPicker){videoNotice('USB saving needs Chrome on HTTPS. Use the browser file picker from a secure hosted copy.');return}let dir;try{dir=await window.showDirectoryPicker({id:'kali-offline-videos',mode:'readwrite',startIn:'documents'});const folder=await dir.getDirectoryHandle('Offline Videos',{create:true});let saved=0;for(const file of chosen){const handle=await folder.getFileHandle(file.name,{create:true});const writable=await handle.createWritable();await writable.write(file);await writable.close();saved++}videoNotice('Saved '+saved+' video file(s) to '+dir.name+'/Offline Videos on your USB.')}catch(e){if(e.name!=='AbortError')videoNotice('USB save failed: '+e.message)}}
 
