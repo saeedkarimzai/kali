@@ -440,9 +440,24 @@ async function importSearchBrain(event){
   event.target.value='';
 }
 function showSavedSearches(){
-  const box=document.getElementById('searchresults');box.innerHTML='';const all=[...kaliSearchSaved,...kaliSearchCache];
-  const h=document.createElement('div');h.className='searchresult';h.textContent=all.length+' saved/cached answers. Select one to view it.';box.appendChild(h);
-  all.forEach((x,i)=>{const row=document.createElement('div');row.className='searchitem';const label=document.createElement('span');label.textContent=x.question;const b=document.createElement('button');b.textContent='VIEW';b.onclick=()=>{lastSearchQuestion=x.question;showSearchResult('Offline answer',x.answer||x.text||'',x.url||'');searchStatus('● LOCAL STORAGE · This answer is saved on this device.')};row.append(label,b);box.appendChild(row)});
+  const box=document.getElementById('searchresults');box.innerHTML='';
+  const all=[...kaliSearchSaved.map((item,index)=>({item,index,type:'saved'})),...kaliSearchCache.map((item,index)=>({item,index,type:'cache'}))];
+  const h=document.createElement('div');h.className='searchresult';h.textContent=all.length+' saved/cached answers. Select VIEW to open one or DELETE to remove it.';box.appendChild(h);
+  all.forEach(entry=>{
+    const x=entry.item,row=document.createElement('div');row.className='searchitem';
+    const label=document.createElement('span');label.textContent=x.question;label.title=x.question;
+    const actions=document.createElement('div');actions.style.display='flex';actions.style.gap='10px';actions.style.flexShrink='0';
+    const view=document.createElement('button');view.textContent='VIEW';view.onclick=()=>{lastSearchQuestion=x.question;showSearchResult('Offline answer',x.answer||x.text||'',x.url||'');searchStatus('● LOCAL STORAGE · This answer is saved on this device.')};
+    const remove=document.createElement('button');remove.textContent='DELETE';remove.style.color='#ff7777';remove.title='Delete this offline result';
+    remove.onclick=()=>{
+      if(entry.type==='saved')kaliSearchSaved.splice(entry.index,1);else kaliSearchCache.splice(entry.index,1);
+      localStorage.setItem(KALI_SEARCH_SAVED_KEY,JSON.stringify(kaliSearchSaved));
+      localStorage.setItem(KALI_SEARCH_CACHE_KEY,JSON.stringify(kaliSearchCache));
+      syncSearchBrainToMountedFolder();
+      showSavedSearches();searchStatus('DELETED · This offline result was removed from this browser and the mounted USB backup.');
+    };
+    actions.append(view,remove);row.append(label,actions);box.appendChild(row);
+  });
   if(!all.length)h.textContent='No saved answers yet. Search online or save your own answer.';
 }
 function showSearchHistory(){
