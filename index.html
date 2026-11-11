@@ -518,7 +518,7 @@ case'targets':return 'LOCAL PRACTICE NETWORK\\nlab-gateway 192.168.1.1 [22,80,44
 case'connect':return labConnect(a[0],a[1]);case'disconnect':labSession={connected:false,host:'',port:0,user:'',root:false};saveLab();return 'Disconnected from simulated target.';
 case'target-ls':return targetLs(a[0]);case'target-cat':return targetCat(a[0]);
 case'login':if(!labSession.connected)return 'login: connect to a target first';if(a[0]==='trainee'&&a[1]==='training123'){labSession.user='trainee';saveLab();return 'Login successful. Authenticated as trainee (simulated).'}if(a[0]==='root'&&a[1]==='labroot-demo'){labSession.user='root';labSession.root=true;saveLab();return 'Demo root session granted inside browser lab only.'}return 'Login incorrect (simulated). Hint: inspect /home/trainee/notes.txt.';
-case'ifconfig':case'ip':return 'lo: 127.0.0.1/8 UP\\neth0: 192.168.1.50/24 UP\\nRX packets 1842  TX packets 1290\\n[simulated interface]';
+case'ifconfig':return 'lo: 127.0.0.1/8 UP\\neth0: 192.168.1.50/24 UP\\nRX packets 1842  TX packets 1290\\n[simulated interface]';case'ip':return a[0]==='route'?'Destination  Gateway      Genmask       Iface\\n0.0.0.0      192.168.1.1  0.0.0.0       eth0 [simulated]':'lo: 127.0.0.1/8 UP\\neth0: 192.168.1.50/24 UP\\n[simulated interface]';
 case'route':return 'Destination  Gateway      Genmask       Iface\\n0.0.0.0      192.168.1.1  0.0.0.0       eth0';
 case'netstat':case'ss':return 'State  Local Address:Port\\nLISTEN 0.0.0.0:22\\nLISTEN 0.0.0.0:3000\\nESTAB 192.168.1.50:53120 -> 192.168.1.1:443\\n[simulated sockets]';
 case'ping':return 'PING '+(a[0]||'training-box')+' (192.168.1.20)\\n64 bytes: icmp_seq=1 ttl=64 time=1.2 ms\\n64 bytes: icmp_seq=2 ttl=64 time=1.0 ms\\n2 packets transmitted, 2 received, 0% loss [simulated]';
