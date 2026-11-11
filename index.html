@@ -492,6 +492,60 @@ function clock(){document.getElementById('clock').textContent=new Date().toLocal
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('./sw.js').catch(()=>{})}
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.altKey&&e.key.toLowerCase()==='t'){e.preventDefault();openWin('terminal')}if(e.key==='Escape')document.getElementById('menu').style.display='none'});
 document.querySelectorAll('.win').forEach(w=>{let h=w.querySelector('.head'),drag=false,ox=0,oy=0;h.onmousedown=e=>{if(e.target.tagName==='BUTTON')return;drag=true;let r=w.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;w.style.zIndex=++z};document.addEventListener('mousemove',e=>{if(drag){w.style.left=Math.max(0,e.clientX-ox)+'px';w.style.top=Math.max(42,e.clientY-oy)+'px'}});document.addEventListener('mouseup',()=>drag=false)})
+
+/* Kali Web OS command expansion: isolated browser-only practice network. */
+const LAB_STATE_KEY='kali_web_lab_target_v1';
+let labSession=JSON.parse(localStorage.getItem(LAB_STATE_KEY)||'{"connected":false,"host":"","port":0,"user":"","root":false}');
+const labFiles={
+ '/':{d:['home','etc','var','opt']},'/home':{d:['trainee']},'/home/trainee':{d:['notes.txt','welcome.txt']},
+ '/home/trainee/notes.txt':{t:'Training notes\\nDemo login: trainee / training123\\nThe flag is in /opt/training/flag.txt.'},
+ '/home/trainee/welcome.txt':{t:'Welcome to the isolated Kali Web OS practice target.'},
+ '/etc':{d:['hostname','os-release','passwd']},'/etc/hostname':{t:'training-box'},
+ '/etc/os-release':{t:'NAME="Training Linux"\\nVERSION="1.0-demo"'},
+ '/etc/passwd':{t:'root:x:0:0:root:/root:/bin/bash\\ntrainee:x:1000:1000:Trainee:/home/trainee:/bin/bash'},
+ '/var':{d:['log']},'/var/log':{d:['auth.log']},'/var/log/auth.log':{t:'[demo] ssh login failed for guest\\n[demo] trainee login successful'},
+ '/opt':{d:['training']},'/opt/training':{d:['flag.txt','README.txt']},
+ '/opt/training/flag.txt':{t:'KALI{browser_lab_only_7f3a}'},
+ '/opt/training/README.txt':{t:'Local browser-only practice target. No real host exists.'}
+};
+function saveLab(){localStorage.setItem(LAB_STATE_KEY,JSON.stringify(labSession))}
+function labConnect(host,port){host=(host||'training-box').toLowerCase();if(!['training-box','lab.local'].includes(host))return 'connect: host not found. Type targets.';port=Number(port||22);if(![22,80,8080].includes(port))return 'connect: connection refused (simulated)';labSession={connected:true,host:'training-box',port,user:'',root:false};saveLab();return '[SIMULATED] Connected to training-box (192.168.1.20:'+port+')\\nService: '+({22:'ssh',80:'http',8080:'http-proxy'}[port])+'\\nBrowser-only target. No real network connection.'}
+function labPath(p){let a=(p||'/home/trainee').startsWith('/')?(p||'/home/trainee'):'/home/trainee/'+p,parts=[];for(const x of a.split('/')){if(!x||x==='.')continue;if(x==='..')parts.pop();else parts.push(x)}return '/'+parts.join('/')}
+function targetLs(p){if(!labSession.connected)return 'target-ls: connect to training-box first';let path=labPath(p),n=labFiles[path];if(!n)return 'target-ls: no such path';return n.d?n.d.map(x=>x+(labFiles[(path==='/'?'':path)+'/'+x]?.d?'/':'')).join('  '):path}
+function targetCat(p){if(!labSession.connected)return 'target-cat: connect to training-box first';let path=labPath(p),n=labFiles[path];return n?.t??'target-cat: no such file'}
+function extraKaliCommand(c,a){switch(c){
+case'targets':return 'LOCAL PRACTICE NETWORK\\nlab-gateway 192.168.1.1 [22,80,443]\\ntraining-box 192.168.1.20 [22,80,8080]\\nUse: scan training-box; connect training-box [port]';
+case'connect':return labConnect(a[0],a[1]);case'disconnect':labSession={connected:false,host:'',port:0,user:'',root:false};saveLab();return 'Disconnected from simulated target.';
+case'target-ls':return targetLs(a[0]);case'target-cat':return targetCat(a[0]);
+case'login':if(!labSession.connected)return 'login: connect to a target first';if(a[0]==='trainee'&&a[1]==='training123'){labSession.user='trainee';saveLab();return 'Login successful. Authenticated as trainee (simulated).'}if(a[0]==='root'&&a[1]==='labroot-demo'){labSession.user='root';labSession.root=true;saveLab();return 'Demo root session granted inside browser lab only.'}return 'Login incorrect (simulated). Hint: inspect /home/trainee/notes.txt.';
+case'ifconfig':case'ip':return 'lo: 127.0.0.1/8 UP\\neth0: 192.168.1.50/24 UP\\nRX packets 1842  TX packets 1290\\n[simulated interface]';
+case'route':return 'Destination  Gateway      Genmask       Iface\\n0.0.0.0      192.168.1.1  0.0.0.0       eth0';
+case'netstat':case'ss':return 'State  Local Address:Port\\nLISTEN 0.0.0.0:22\\nLISTEN 0.0.0.0:3000\\nESTAB 192.168.1.50:53120 -> 192.168.1.1:443\\n[simulated sockets]';
+case'ping':return 'PING '+(a[0]||'training-box')+' (192.168.1.20)\\n64 bytes: icmp_seq=1 ttl=64 time=1.2 ms\\n64 bytes: icmp_seq=2 ttl=64 time=1.0 ms\\n2 packets transmitted, 2 received, 0% loss [simulated]';
+case'traceroute':return 'traceroute to '+(a[0]||'training-box')+'\\n1 192.168.1.1 1.1 ms\\n2 192.168.1.20 2.4 ms [simulated]';
+case'nslookup':case'dig':case'host':return 'Server: 192.168.1.1\\nName: '+(a[0]||'training-box')+'\\nAddress: 192.168.1.20 [local demo DNS]';
+case'curl':case'wget':return 'HTTP/1.1 200 OK\\nServer: TrainingBox/1.0 (simulated)\\nContent-Type: text/html\\n<h1>Training Box</h1><p>Local practice target only.</p>';
+case'whois':return 'Domain: '+(a[0]||'training-box.local')+'\\nRegistrar: LOCAL TRAINING REGISTRY\\nStatus: RESERVED FOR SIMULATION. No public lookup performed.';
+case'uptime':return 'up 2 hours, 14 minutes, 1 user, load average: 0.08, 0.04, 0.01 (demo)';
+case'id':return labSession.user?'uid='+(labSession.root?'0(root)':'1000(trainee)')+' gid='+(labSession.root?'0(root)':'1000(trainee)'):'uid=1000(kali) gid=1000(kali)';
+case'groups':return labSession.user?(labSession.root?'root':'trainee users'):'kali sudo audio video';
+case'ps':case'top':return 'PID USER STAT COMMAND\\n1 root S /sbin/init (demo)\\n244 kali S terminal-shell\\n311 kali S kali-web-os\\n[simulated process list]';
+case'df':return 'Filesystem Size Used Avail Use% Mounted on\\nvirtual-root 8.0G 1.2G 6.8G 15% / [simulated]';
+case'du':return '4.0K ./notes.txt\\n12K ./Documents\\n16K . (simulated)';
+case'free':return 'Mem: 4096M total 1024M used 3072M free\\nSwap: 1024M total 0M used 1024M free (simulated)';
+case'file':return a[0]?(a[0].endsWith('.html')?'HTML document, UTF-8 text':a[0].endsWith('.txt')?'ASCII text':'regular file'):'file: missing operand';
+case'stat':return a[0]?'File: '+a[0]+'\\nSize: 128 Type: regular file Mode: 0644 [simulated]':'stat: missing operand';
+case'chmod':case'chown':return 'Permission changes are disabled for real files in this simulator.';
+case'sudo':return a[0]==='-l'?'User kali may run: apt, systemctl (demo only). Host privilege escalation is unavailable.':'sudo: host access is unavailable. Use the isolated training login.';
+case'systemctl':return 'ssh.service loaded active running\\napache2.service loaded active running\\nnetworking.service loaded active running (simulated)';
+case'journalctl':return 'Nov 11 08:01 kali-web systemd[1]: Started simulated network service.\\nNov 11 08:02 sshd[demo]: Listening on port 22.';
+case'apt':return 'Package manager simulation. Installed: nmap, curl, git, python3, wireshark.';
+default:return null;
+}}
+const originalKaliExecuteOne=executeOne;
+executeOne=async function(s){const a=tokens(s),cmd=(a.shift()||'').toLowerCase();const extra=extraKaliCommand(cmd,a);return extra===null?originalKaliExecuteOne(s):extra};
+help=function(){print('SYSTEM: help clear pwd whoami hostname date uname neofetch uptime id groups ps top df free\\nFILES: ls cd mkdir touch cat rm cp mv find grep head tail wc file stat du edit mount\\nNETWORK (SIMULATED): ifconfig ip route netstat ss ping traceroute nslookup dig curl wget whois\\nCYBER LAB (SIMULATED ONLY): scan targets connect disconnect target-ls target-cat login sudo -l\\nUTILS: hash encode decode chmod chown systemctl journalctl apt\\nLAB: targets; connect training-box; login trainee training123; target-ls; target-cat /opt/training/flag.txt\\nAll network/cyber commands use built-in demo data. No real machines are contacted.')};
+
 </script>
 </body>
 </html>
