@@ -1,4 +1,4 @@
-const CACHE_NAME = "kali-web-os-shell-v3";
+const CACHE_NAME = "kali-web-os-shell-v4";
 const APP_FILES = ["./", "./index.html"];
 
 self.addEventListener("install", event => {
