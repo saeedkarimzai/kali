@@ -306,9 +306,50 @@ async function hash(args){if(!args.length)return 'hash: missing text';const b=aw
 function enc(args){return args.length?btoa(unescape(encodeURIComponent(args.join(' ')))):'encode: missing text'}
 function dec(args){try{return decodeURIComponent(escape(atob(args.join(''))))}catch{return 'decode: invalid Base64'}}
 function scan(target){return '[+] WEB CYBER LAB\n[+] Target: '+(target||'lab.local')+'\n\nlab-gateway   192.168.1.1\n  22/tcp   open  ssh\n  80/tcp   open  http\n  443/tcp  open  https\n\ntraining-box  192.168.1.20\n  80/tcp   open  http\n  8080/tcp open  http-proxy\n\n[+] simulated scan complete'}
-function tokens(s){return s.match(/(?:"[^"]*"|[^\s"]+)/g)?.map(x=>x.replace(/^"|"$/g,''))||[]}
-function splitPipe(s){return s.split('|').map(x=>x.trim()).filter(Boolean)}
-function redirectInfo(s){let m=s.match(/^(.*?)\s+(>>|>)\s+(.+)$/);return m?{cmd:m[1],op:m[2],file:m[3].trim()}:null}
+function tokens(source){
+  const result=[];let value='',quote=null,escaped=false,started=false;
+  for(let i=0;i<source.length;i++){
+    const ch=source[i];
+    if(escaped){value+=ch;escaped=false;started=true;continue}
+    if(ch==='\\'&&quote!=="'"){escaped=true;started=true;continue}
+    if(quote){if(ch===quote)quote=null;else value+=ch;started=true;continue}
+    if(ch==="'"||ch==='"'){quote=ch;started=true;continue}
+    if(/\s/.test(ch)){if(started){result.push(value);value='';started=false}continue}
+    value+=ch;started=true;
+  }
+  if(escaped)value+='\\';
+  if(quote)throw new Error('shell: unmatched '+quote+' quote');
+  if(started)result.push(value);
+  return result;
+}
+function splitPipe(source){
+  const parts=[];let start=0,quote=null,escaped=false;
+  for(let i=0;i<source.length;i++){
+    const ch=source[i];
+    if(escaped){escaped=false;continue}
+    if(ch==='\\'&&quote!=="'"){escaped=true;continue}
+    if(quote){if(ch===quote)quote=null;continue}
+    if(ch==="'"||ch==='"'){quote=ch;continue}
+    if(ch==='|'){const part=source.slice(start,i).trim();if(part)parts.push(part);start=i+1}
+  }
+  const last=source.slice(start).trim();if(last)parts.push(last);
+  return parts;
+}
+function redirectInfo(source){
+  let quote=null,escaped=false,found=-1,op='';
+  for(let i=0;i<source.length;i++){
+    const ch=source[i];
+    if(escaped){escaped=false;continue}
+    if(ch==='\\'&&quote!=="'"){escaped=true;continue}
+    if(quote){if(ch===quote)quote=null;continue}
+    if(ch==="'"||ch==='"'){quote=ch;continue}
+    if(ch==='>'){found=i;op=source[i+1]==='>'?'>>':'>';break}
+  }
+  if(found<0)return null;
+  const cmd=source.slice(0,found).trim(),file=source.slice(found+op.length).trim();
+  if(!cmd||!file)return null;
+  try{return{cmd,op,file:tokens(file)[0]}}catch{return null}
+}
 async function executeOne(s){const a=tokens(s),c=(a.shift()||'').toLowerCase();switch(c){
 case'help':help();return'';case'clear':clearOutput();return'';case'pwd':return realDirHandle?realPathLabel():cwd;case'whoami':return'kali';case'hostname':return'kali-web';case'date':return new Date().toString();case'uname':return'Kali Web OS browser environment';case'neofetch':return neofetch();
 case'ls':await ls(a);return'';case'cd':await cd(a);return'';case'mkdir':await mkdir(a);return'';case'touch':await touch(a);return'';case'cat':await cat(a);return'';case'rm':await rm(a);return'';case'cp':realDirHandle?await cpReal(a):cpVirtual(a);return'';case'mv':realDirHandle?await mvReal(a):mvVirtual(a);return'';case'find':realDirHandle?await findReal(a):findVirtual(a);return'';case'grep':realDirHandle?await grepReal(a):grepVirtual(a);return'';case'head':realDirHandle?await headReal(a):headVirtual(a);return'';case'tail':realDirHandle?await tailReal(a):tailVirtual(a);return'';case'wc':realDirHandle?await wcReal(a):wcVirtual(a);return'';
