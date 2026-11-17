@@ -656,10 +656,7 @@ function sandWorldSystemsStep(){
    if(t===330&&oxygen&&Math.random()<.0008){sandGrid[i]=5;sandLife[i]=65}
    if(t===329&&near.some(n=>[7,347].includes(sandGrid[n]))&&Math.random()<.035)sandGrid[i]=0;
   }
-  if(t===5){
-   if(!oxygen&&Math.random()<.12){sandGrid[i]=6;sandLife[i]=45}
-   else if(oxygen&&Math.random()<.025){const n=near.find(n=>sandGrid[n]===328);if(n!==undefined)sandGrid[n]=0;const e=near.find(n=>sandGrid[n]===0);if(e!==undefined)sandGrid[e]=329}
-  }
+  if(t===5&&oxygen&&Math.random()<.025){const n=near.find(n=>sandGrid[n]===328);if(n!==undefined)sandGrid[n]=0;const e=near.find(n=>sandGrid[n]===0);if(e!==undefined)sandGrid[e]=329}
   if(t===9||t===338){
    const victim=near.find(n=>[4,7,13,33,35,36,37,41,43,44,144,145,277,278,279,280,281,282,283,348].includes(sandGrid[n]));
    if(victim!==undefined&&Math.random()<.045)sandGrid[victim]=t===9?0:336;
