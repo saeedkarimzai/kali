@@ -440,10 +440,9 @@ function sandMaterialCraftStep(){
   else if(t===286&&near(hot)&&Math.random()<.025)sandGrid[i]=292;
   else if(t===292&&near([2,48])&&Math.random()<.04){sandGrid[i]=293;for(const d of dirs)if(sandGrid[i+d]===2||sandGrid[i+d]===48){sandGrid[i+d]=0;break}}
   else if(t===284&&near(hot)&&Math.random()<.035)sandGrid[i]=218;
-  else if(t===291&&near(hot)&&Math.random()<.035)sandGrid[i]=6;
+  else if(t===291){if(near(hot)&&Math.random()<.035){sandGrid[i]=6;continue}const down=i+sandW;if(sandGrid[down]===0&&Math.random()<.22)sandGrid[down]=291,sandGrid[i]=0;else{const d=Math.random()<.5?i-1:i+1;if(sandGrid[d]===0&&Math.random()<.16)sandGrid[d]=291,sandGrid[i]=0}}
   else if(t===294&&near([5,10,46])&&Math.random()<.012)sandGrid[i]=28;
   else if(t===295&&near(hot)&&Math.random()<.018)sandGrid[i]=277;
-  if(t===291){const down=i+sandW;if(sandGrid[down]===0&&Math.random()<.22)sandGrid[down]=291,sandGrid[i]=0;else{const d=Math.random()<.5?i-1:i+1;if(sandGrid[d]===0&&Math.random()<.16)sandGrid[d]=291,sandGrid[i]=0}}
  }
 }
 function sandWindStep(){
