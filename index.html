@@ -349,26 +349,57 @@ function sandNewCategoryStep(){
   }
  }
 }
+let sandWindPhase=0;
 function sandWindStep(){
- if(!sandGrid)return;
- const movable=(t)=>t!==0&&![3,4,7,11,41,42,43,44,45,51,52,205,206,207,208,209,210,211].includes(t);
+ if(!sandGrid||!sandW||!sandH)return;
+ sandWindPhase+=.17;
+ const moved=new Uint8Array(sandGrid.length);
+ const fixed=new Set([0,3,4,7,11,41,42,43,44,45,51,52,205,206,207,208,209,210,211]);
+ const light=new Set([6,22,31,66,68,69,70,72,78,93,102,103,104,178,180,192,197,200,204]);
+ const medium=new Set([1,2,8,9,10,12,13,14,15,16,17,18,19,20,21,25,26,27,28,29,30,32,33,34,35,36,37,38,39,40,48,53,54,56,58,59,60,61,62,63,67,73,74,75,76,77,79,80,81,82,83,84,85,86,87,88,89,90,91,92,94,95,98,99,100,101,105,106,107,108,109,110,111,112,140,141,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,179,181,182,183,184,185,186,188,189,190,191,193,194,195]);
+ const moveParticle=(sx,sy,vx,vy,strength,kind)=>{
+  const from=sy*sandW+sx,part=sandGrid[from];if(!part||fixed.has(part)||moved[from])return;
+  let mass=light.has(part)?1.35:medium.has(part)?.78:.42;
+  if(part===1||part===12||part===13||part===26||part===27||part===29||part===34||part===49||part===56||part===58||part===67||part===73||part===76||part===77||part===87||part===91||part===98||part===99||part===108||part===109||part===112)mass*=.62;
+  let chance=Math.min(.96,strength*mass);
+  if(Math.random()>chance)return;
+  const turbulence=Math.sin((sx+ sandWindPhase*9)*.23+(sy*.17))*0.38;
+  let dx=Math.round(vx+turbulence),dy=Math.round(vy+Math.cos((sy+sandWindPhase*7)*.19)*.22);
+  if(kind===207){dy=-1;dx+=Math.random()<.5?-1:1}
+  if(dx===0&&dy===0)dx=vx<0?-1:1;
+  let tx=sx+dx,ty=sy+dy;
+  if(tx<1||tx>=sandW-1||ty<1||ty>=sandH-1)return;
+  let to=ty*sandW+tx;
+  if(sandGrid[to]!==0){
+   // Airflow bends around solid obstacles instead of deleting or tunnelling through them.
+   const side=Math.random()<.5?-1:1;
+   const alternatives=[[sx+side,sy+Math.sign(dy)],[sx+side,sy],[sx,sy-1]];
+   let found=false;
+   for(const p of alternatives){if(p[0]>0&&p[0]<sandW-1&&p[1]>0&&p[1]<sandH-1){const q=p[1]*sandW+p[0];if(sandGrid[q]===0){to=q;found=true;break}}}
+   if(!found)return;
+  }
+  sandGrid[to]=part;sandGrid[from]=0;moved[to]=1;
+ };
+ // Emitters create a continuous local flow, with strength fading toward the edge.
  for(let y=1;y<sandH-1;y++)for(let x=1;x<sandW-1;x++){
   const i=y*sandW+x,t=sandGrid[i];if(t<205||t>211)continue;
-  const radius=t===206?8:t===208?6:t===209?7:t===210?9: t===211?7:5;
-  if(Math.random()>(t===206?.9:t===210?.8:.65))continue;
-  const dx=t===205||t===206||t===211?1:t===208?0:t===209?0:-1;
-  const dy=t===207?-1:t===210?0:0;
-  const ox=(Math.random()*radius*2-radius)|0,oy=(Math.random()*radius*2-radius)|0;
-  const sx=x+ox,sy=y+oy;if(sx<1||sx>=sandW-1||sy<1||sy>=sandH-1)continue;
-  const from=sy*sandW+sx,part=sandGrid[from];if(!movable(part))continue;
-  let tx=sx+dx,ty=sy+dy;
-  if(t===208){tx+=Math.sign(x-sx);ty+=Math.sign(y-sy)}
-  else if(t===209){const rx=sx-x,ry=sy-y;tx=sx+Math.sign(-ry);ty=sy+Math.sign(rx)}
-  else if(t===210){tx=sx+Math.sign(sx-x);ty=sy+Math.sign(sy-y)}
-  else if(t===207){tx=sx+(Math.random()<.5?-1:1);ty=sy-1}
-  if(tx<1||tx>=sandW-1||ty<1||ty>=sandH-1)continue;
-  const to=ty*sandW+tx;
-  if(sandGrid[to]===0){sandGrid[to]=part;sandGrid[from]=0}
+  const radius=t===206?15:t===210?12:t===208?10:t===209?11:t===211?13:t===207?8:10;
+  const strength=t===206?.92:t===210?.86:t===208?.78:t===209?.72:t===211?.82:t===207?.42:.58;
+  const phase=Math.sin(sandWindPhase+(x*.07)+(y*.04));
+  for(let oy=-radius;oy<=radius;oy++)for(let ox=-radius;ox<=radius;ox++){
+   const dist=Math.sqrt(ox*ox+oy*oy);if(dist<1||dist>radius)continue;
+   const sx=x+ox,sy=y+oy;if(sx<1||sx>=sandW-1||sy<1||sy>=sandH-1)continue;
+   const falloff=1-dist/radius;
+   if(Math.random()>falloff*strength*.48)continue;
+   let vx=1,vy=phase*.24,kind=t;
+   if(t===206){vx=2.1;vy=phase*.42}
+   else if(t===207){vx=phase*.45;vy=-.9}
+   else if(t===208){vx=-Math.sign(ox)*1.15;vy=-Math.sign(oy)*1.15}
+   else if(t===209){vx=-Math.sign(oy)*1.2;vy=Math.sign(ox)*1.2}
+   else if(t===210){vx=Math.sign(ox)*1.8;vy=Math.sign(oy)*1.8}
+   else if(t===211){if(ox<0||Math.abs(oy)>Math.max(2,ox*.72))continue;vx=1.65;vy=oy*.035+phase*.18}
+   moveParticle(sx,sy,vx,vy,falloff*strength,kind);
+  }
  }
 }
 function sandFusionStep(){
