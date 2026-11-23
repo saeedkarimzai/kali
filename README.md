@@ -1,3 +1,5 @@
+> **Legacy repository:** Active Kali Simulator development now lives in [kali-sim-101](https://github.com/saeedkarimzai/kali-sim-101). Use that repository for new features and fixes. This older `kali` repository is kept as a backup and may not receive updates.
+
 # Kali Web OS
 
 A single-file, browser-based Kali-inspired desktop and command-line learning simulator.
